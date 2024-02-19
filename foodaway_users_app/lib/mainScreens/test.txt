@@ -1,0 +1,615 @@
+CustomScrollView(
+          slivers: [
+            SliverPersistentHeader(
+              delegate: HeaderText(headerText: 'Total Amount = 120'),
+              pinned: true,
+            ),
+            StreamBuilder<QuerySnapshot>(
+              // Use the item IDs from the FutureBuilder to filter the Firestore query
+              stream: FirebaseFirestore.instance.collection("items")
+                  .where("itemID", whereIn: futureSnapshot.data ?? [])
+                  .orderBy("publishedDate", descending: true)
+                  .snapshots(),
+              builder: (context, streamSnapshot) {
+                if (!streamSnapshot.hasData) {
+                  // Show a loading spinner if the StreamBuilder is still waiting for data
+                  return SliverToBoxAdapter(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (streamSnapshot.data!.docs.isEmpty) {
+                  // If the query returns no documents, you might want to display a message or an empty container
+                  return SliverFillRemaining(
+                    child: Center(child: Text("No items found")),
+                  );
+                } else {
+                  // Once data is available, build a grid with the items
+                  return SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1, // Number of columns
+                      crossAxisSpacing: 10.0, // Spacing between columns
+                      mainAxisSpacing: 10.0, // Spacing between rows
+                      childAspectRatio: 1.35, // Aspect ratio of grid items
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        Items model = Items.fromJson(
+                          streamSnapshot.data!.docs[index].data()! as Map<String, dynamic>,
+                        );
+                        // Replace 'CartItemDesign' with the actual widget you want to use to display each item
+                        return CartItemDesign(
+                          model: model,
+                          context: context,
+                          separateItemQuantitiesList: [index],
+                        );
+                      },
+                      childCount: streamSnapshot.hasData ? streamSnapshot.data!.docs.length : 0,
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:foodaway_users_app/assistantMethods/assistant_methods.dart';
+import 'package:foodaway_users_app/assistantMethods/cart_item_counter.dart';
+import 'package:foodaway_users_app/models/items.dart';
+import 'package:foodaway_users_app/widgets/cart_item_design.dart';
+import 'package:foodaway_users_app/widgets/header_text.dart';
+import 'package:foodaway_users_app/widgets/items_design.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class CartScreen extends StatefulWidget {
+  final String? sellerUID;
+
+  CartScreen({this.sellerUID});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  String? testName;
+  String? sellerFirstName;
+  String? sellerLastName;
+  String? sellerPhotoUrl;
+  String? sellerEmail;
+  String? sellerAddress;
+  String? sellerUid;
+
+  Future<void> getDataFromSharedPreferences() async {
+    final sharedPreferences = await SharedPreferences.getInstance();
+    testName = sharedPreferences.getString('name') ?? 'Name not found';
+    // sellerFirstName = sharedPreferences.getString('firstName') ?? 'Name not found';
+    // sellerLastName = sharedPreferences.getString('lastName') ?? 'Name not found';
+    sellerPhotoUrl = sharedPreferences.getString('photoUrl') ?? 'photoUrl not found';
+    sellerEmail = sharedPreferences.getString('email') ?? 'Email not found';
+    sellerAddress = sharedPreferences.getString('address') ?? 'Address not found';
+    sellerUid = sharedPreferences.getString('Uid') ?? 'Address not found';
+    // You can set other properties in a similar manner.
+  }
+
+  Future<String> getNameFromSharedPreferences() async {
+      final sharedPreferences = await SharedPreferences.getInstance();
+      return sharedPreferences.getString('name') ?? 'Name not found';
+    }
+    @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    separateItemQuantities();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: FutureBuilder<String>(
+          future: getNameFromSharedPreferences(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Text('Loading...'); // Display "Loading..." while data is loading.
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}'); // Display an error message if an error occurs.
+            } else {
+              return Text('Food Away'); // Display the retrieved name or a default message.
+            }
+          },
+        ),
+        centerTitle: true,
+        flexibleSpace:Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors:[
+                Colors.red,
+                Colors.black,
+            ],
+            begin: FractionalOffset(0.0, 0.0),
+            end: FractionalOffset(1.0, 0.0),
+            stops: [0.0,1.0],
+            tileMode: TileMode.clamp
+            )
+          ),
+        ),
+        actions: [
+          Stack(
+            children: [
+              IconButton(onPressed:() {
+                
+           Navigator.push(context, MaterialPageRoute(builder:(context) => CartScreen(sellerUID: widget.sellerUID),));
+          }, icon: Icon(Icons.shopping_cart)),
+          Positioned(child: Stack(
+            children: [
+              Icon(Icons.brightness_1,size: 25.0,color: Colors.blue,),
+              Positioned(top: 1,right:6, child: Center(
+                child:Consumer<CartItemCounter>(builder:(context, counter, child) {
+                  int x = counter.count!-1;
+                    return Text(x.toString(),style: TextStyle(color: Colors.white,fontSize: 20));
+                },)
+                ),
+                )
+            ],
+          )
+          )
+            ],
+          )
+        ],
+        leading: IconButton(onPressed:() {
+          Navigator.pop(context);
+        }, icon: Icon(Icons.arrow_back)),
+      ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          SizedBox(width: 4,),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: FloatingActionButton.extended(
+            backgroundColor: Colors.cyan,
+            icon: Icon(Icons.clear_all),  
+            onPressed:() {
+              
+            },
+             label:Text('Clear Cart')),
+          ),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: FloatingActionButton.extended(
+            backgroundColor: Colors.cyan,
+            icon: Icon(Icons.navigate_next),  
+            onPressed:() {
+              
+            },
+             label:Text('Check Out')),
+          )
+        ],
+      ),
+      body: Center(
+  child: FutureBuilder<List<String>>(
+    future: separateItemIDs(), // This is your asynchronous function to get item IDs
+    builder: (BuildContext context, AsyncSnapshot<List<String>> futureSnapshot) {
+      if (futureSnapshot.connectionState == ConnectionState.waiting) {
+        // Show a loading spinner while waiting for the asynchronous operation to complete
+        return CircularProgressIndicator();
+      } else if (futureSnapshot.hasError) {
+        // If the FutureBuilder encounters an error, display the error
+        return Text('Error: ${futureSnapshot.error}');
+      } else {
+        // Once the data is available, proceed to build the UI
+        return CustomScrollView(
+          slivers: [
+            SliverPersistentHeader(
+              delegate: HeaderText(headerText: 'Total Amount = 120'),
+              pinned: true,
+            ),
+            StreamBuilder<QuerySnapshot>(
+              // Use the item IDs from the FutureBuilder to filter the Firestore query
+              stream: FirebaseFirestore.instance.collection("items")
+                  .where("itemID", whereIn: futureSnapshot.data ?? [])
+                  .orderBy("publishedDate", descending: true)
+                  .snapshots(),
+              builder: (context, streamSnapshot) {
+                if (!streamSnapshot.hasData) {
+                  // Show a loading spinner if the StreamBuilder is still waiting for data
+                  return SliverToBoxAdapter(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (streamSnapshot.data!.docs.isEmpty) {
+                  // If the query returns no documents, you might want to display a message or an empty container
+                  return SliverFillRemaining(
+                    child: Center(child: Text("No items found")),
+                  );
+                } else {
+                  // Once data is available, build a grid with the items
+                  return SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1, // Number of columns
+                      crossAxisSpacing: 10.0, // Spacing between columns
+                      mainAxisSpacing: 10.0, // Spacing between rows
+                      childAspectRatio: 1.35, // Aspect ratio of grid items
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        Items model = Items.fromJson(
+                          streamSnapshot.data!.docs[index].data()! as Map<String, dynamic>,
+                        );
+                        // Replace 'CartItemDesign' with the actual widget you want to use to display each item
+                        return CartItemDesign(
+                          model: model,
+                          context: context,
+                          separateItemQuantitiesList: [index],
+                        );
+                      },
+                      childCount: streamSnapshot.data!.docs.length,
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      }
+    },
+  ),
+)
+
+    );
+  }
+}
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:foodaway_users_app/assistantMethods/assistant_methods.dart';
+import 'package:foodaway_users_app/assistantMethods/cart_item_counter.dart';
+import 'package:foodaway_users_app/models/items.dart';
+import 'package:foodaway_users_app/widgets/cart_item_design.dart';
+import 'package:foodaway_users_app/widgets/header_text.dart';
+import 'package:foodaway_users_app/widgets/items_design.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class CartScreen extends StatefulWidget {
+  final String? sellerUID;
+
+  CartScreen({this.sellerUID});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+    @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    separateItemQuantities();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+  child: FutureBuilder<List<String>>(
+    future: separateItemIDs(), // This is your asynchronous function to get item IDs
+    builder: (BuildContext context, AsyncSnapshot<List<String>> futureSnapshot) {
+      if (futureSnapshot.connectionState == ConnectionState.waiting) {
+        // Show a loading spinner while waiting for the asynchronous operation to complete
+        return CircularProgressIndicator();
+      } else if (futureSnapshot.hasError) {
+        // If the FutureBuilder encounters an error, display the error
+        return Text('Error: ${futureSnapshot.error}');
+      } else {
+        // Once the data is available, proceed to build the UI
+        return CustomScrollView(
+          slivers: [
+            SliverPersistentHeader(
+              delegate: HeaderText(headerText: 'Total Amount = 120'),
+              pinned: true,
+            ),
+            StreamBuilder<QuerySnapshot>(
+              // Use the item IDs from the FutureBuilder to filter the Firestore query
+              stream: FirebaseFirestore.instance.collection("items")
+                  .where("itemID", whereIn: futureSnapshot.data ?? [])
+                  .orderBy("publishedDate", descending: true)
+                  .snapshots(),
+              builder: (context, streamSnapshot) {
+                if (!streamSnapshot.hasData) {
+                  // Show a loading spinner if the StreamBuilder is still waiting for data
+                  return SliverToBoxAdapter(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (streamSnapshot.data!.docs.isEmpty) {
+                  // If the query returns no documents, you might want to display a message or an empty container
+                  return SliverFillRemaining(
+                    child: Center(child: Text("No items found")),
+                  );
+                } else {
+                  // Once data is available, build a grid with the items
+                  return SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1, // Number of columns
+                      crossAxisSpacing: 10.0, // Spacing between columns
+                      mainAxisSpacing: 10.0, // Spacing between rows
+                      childAspectRatio: 1.35, // Aspect ratio of grid items
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        Items model = Items.fromJson(
+                          streamSnapshot.data!.docs[index].data()! as Map<String, dynamic>,
+                        );
+                        // Replace 'CartItemDesign' with the actual widget you want to use to display each item
+                        return CartItemDesign(
+                          model: model,
+                          context: context,
+                          separateItemQuantitiesList: [index],
+                        );
+                      },
+                      childCount: streamSnapshot.data!.docs.length,
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      }
+    },
+  ),
+)
+
+    );
+  }
+}
+
+
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+class _CartScreenState extends State<CartScreen> {
+  Future<List<int>>? separateItemQuantityListFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    separateItemQuantityListFuture = separateItemQuantities();
+  }
+
+  Future<List<int>> separateItemQuantities() async {
+    // Your logic to fetch item quantities
+    return [1, 2, 3]; // Example item quantities, replace with your actual logic
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: FutureBuilder<List<String>>(
+          future: separateItemIDs(), // This is your asynchronous function to get item IDs
+          builder: (BuildContext context, AsyncSnapshot<List<String>> futureSnapshot) {
+            if (futureSnapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator(); // Show loading spinner while waiting
+            } else if (futureSnapshot.hasError) {
+              return Text('Error: ${futureSnapshot.error}'); // Display errors, if any
+            } else {
+              // Once the item IDs data is available, proceed to build another FutureBuilder for item quantities
+              return FutureBuilder<List<int>>(
+                future: separateItemQuantityListFuture, // This is the future for item quantities
+                builder: (context, quantitySnapshot) {
+                  if (!quantitySnapshot.hasData) {
+                    return CircularProgressIndicator(); // Show loading spinner while waiting for quantities
+                  } else {
+                    // Both item IDs and quantities are now loaded, proceed to build the UI
+                    return buildCustomScrollView(quantitySnapshot.data!, futureSnapshot.data!);
+                  }
+                },
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget buildCustomScrollView(List<int> itemQuantities, List<String> itemIds) {
+    return CustomScrollView(
+      slivers: [
+        SliverPersistentHeader(
+          delegate: HeaderText(headerText: 'Total Amount = 120'),
+          pinned: true,
+        ),
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection("items")
+              .where("itemID", whereIn: itemIds.isNotEmpty ? itemIds : ["dummyID"]) // Prevent querying with an empty list
+              .orderBy("publishedDate", descending: true)
+              .snapshots(),
+          builder: (context, streamSnapshot) {
+            if (!streamSnapshot.hasData) {
+              return SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
+            } else if (streamSnapshot.data!.docs.isEmpty) {
+              return SliverFillRemaining(child: Center(child: Text("No items found")));
+            } else {
+              return SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 1,
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 10.0,
+                  childAspectRatio: 1.35,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    Items model = Items.fromJson(
+                      streamSnapshot.data!.docs[index].data()! as Map<String, dynamic>,
+                    );
+                    int quantityNumber = index < itemQuantities.length ? itemQuantities[index] : 0;
+
+                    return CartItemDesign(
+                      model: model,
+                      context: context,
+                      quantityNumber: quantityNumber,
+                    );
+                  },
+                  childCount: streamSnapshot.data!.docs.length,
+                ),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+}
+
+
+
+FloatingActionButton.extended(
+        onPressed:() async{
+        // save address info
+        if(formKey.currentState!.validate())
+        {
+          final model = Address(
+            name: _name.text.trim(),
+            state: _state.text.trim(),
+            fullAddress: _completeAddress.text.trim(),
+            phoneNumber: _phoneNumber.text.trim(),
+            flatNumber: _flatNumber.text.trim(),
+            city: _city.text.trim(),
+            lat: position!.latitude.toString(),
+            lng: position!.longitude.toString()
+          ).toJson();
+          SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
+          FirebaseFirestore.instance.collection("users").doc(sharedPreferences.getString("uid"))
+          .collection("userAddress").doc(DateTime.now().millisecondsSinceEpoch.toString())
+          .set(model).then((value) {
+            Fluttertoast.showToast(msg: "New Address has been saved.");
+            formKey.currentState!.reset();
+          });
+        }
+      }, 
+      label: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text('Save'),
+      ),
+      icon: Icon(Icons.save),
+      )
+
+
+      Column(
+           crossAxisAlignment:CrossAxisAlignment.center,
+           mainAxisSize:MainAxisSize.min,
+           children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.all(0),
+                child: Text('Select Address:',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20),), 
+                ),
+            ),
+            Consumer<AddressChanger>(builder:(context, address, c) {
+              
+              return Flexible(
+                child: StreamBuilder(
+                  stream:FirebaseFirestore.instance.collection("users").doc(sharedPreferences!.getString("uid"))
+                  .collection("userAddress").snapshots(), 
+                  builder:(context, snapshot) {
+                    return !snapshot.hasData ? Center(child: CircularProgressIndicator(),) : snapshot.data!.docs.length == 0 ? 
+                    Container(child:Center(child: Text('Data did not arrived in save address screnn'),),) 
+                    : ListView.builder(
+                      itemCount: snapshot.data!.docs.length,
+                      shrinkWrap: true,
+                      itemBuilder:(context, index) {
+                          return AddressDesign(
+                            currentIndex: address.count,
+                            value: index,
+                            addressID: snapshot.data!.docs[index].id,
+                            totalAmount: widget.totalAmount,
+                            sellerUID: widget.sellerUID,
+                            model: Address.fromJson(
+                              snapshot.data!.docs[index].data() as Map<String, dynamic>
+                            ),
+                          );
+                    },);
+                  },
+                  )
+                );
+            },)
+           ],
+      ),
+
+
+
+
+      class _MyOrdersScreenState extends State<MyOrdersScreen> {
+    Future<String?> getUid() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString("uid");
+}
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(
+        appBar:AppBar(),
+        body: FutureBuilder<String?>(
+          future:getUid() , 
+          builder:(context, snapshot) {
+            
+             if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+         }
+
+          if (snapshot.hasError || snapshot.data == null) {
+            return Center(child: Text('Error retrieving UID or UID not found.'));
+          }
+          final uid = snapshot.data!;
+          return StreamBuilder<QuerySnapshot>(
+            stream:FirebaseFirestore.instance
+            .collection("users").doc(uid).collection("orders")
+            .where("status" , isEqualTo: "normal")
+            .orderBy("orderTime",descending: true).snapshots(), 
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+              }
+              return ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder:(context, index) {
+                    var orderData = snapshot.data!.docs[index];
+                    var productIDs = orderData['productIDa'];
+
+                     var itemIDs = separateOrderItemIDs(productIDs);
+                    return FutureBuilder<QuerySnapshot>(
+                      future:FirebaseFirestore.instance.collection("items")
+                      .where("itemID", whereIn: itemIDs).get(),
+                      // .where("orderBy",whereIn:  (snapshot.data!.docs[index].data()! as Map<String , dynamic> )["uid"])
+                      // .orderBy("publishedDate",descending: true).get(), 
+                      builder:(context, itemSnapshot) {
+                        if (!itemSnapshot.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        return OrderCard(
+                          itemCount: itemSnapshot.data!.docs.length,
+                          data: itemSnapshot.data!.docs,
+                          orderID: orderData.id,
+                          seperateQuantitiesList: separateOrderItemQuantities(productIDs),
+                        );
+                      },
+                      );
+                }, 
+                );
+            }, 
+            );
+          },),
+      ),
+    );
+  }
+}

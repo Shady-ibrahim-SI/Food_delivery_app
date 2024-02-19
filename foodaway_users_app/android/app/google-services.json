@@ -1,0 +1,97 @@
+{
+  "project_info": {
+    "project_number": "819804085202",
+    "project_id": "food-away-sellers-app",
+    "storage_bucket": "food-away-sellers-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:819804085202:android:80c24856bae6c3bf4cc60b",
+        "android_client_info": {
+          "package_name": "com.example.foodaway_riders_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "819804085202-6669iu73pcvgv37ms6vqp0mlk781vabh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4db0s5d65Vtj2qTZjOrwya-ER8IbSb-w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "819804085202-6669iu73pcvgv37ms6vqp0mlk781vabh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:819804085202:android:e4f2a5deccef17e84cc60b",
+        "android_client_info": {
+          "package_name": "com.example.foodaway_sellers_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "819804085202-6669iu73pcvgv37ms6vqp0mlk781vabh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4db0s5d65Vtj2qTZjOrwya-ER8IbSb-w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "819804085202-6669iu73pcvgv37ms6vqp0mlk781vabh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:819804085202:android:d1b1eb4534149a2f4cc60b",
+        "android_client_info": {
+          "package_name": "com.example.foodaway_users_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "819804085202-6669iu73pcvgv37ms6vqp0mlk781vabh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4db0s5d65Vtj2qTZjOrwya-ER8IbSb-w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "819804085202-6669iu73pcvgv37ms6vqp0mlk781vabh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
