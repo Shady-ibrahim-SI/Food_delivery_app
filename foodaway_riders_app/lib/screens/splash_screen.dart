@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:foodaway_riders_app/Authentication_screens/rider_home_screen.dart';
+import 'package:foodaway_riders_app/mainScreens/rider_home_screen.dart';
 import 'package:foodaway_riders_app/screens/on_boarding_screens/on_boarding_screen1.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

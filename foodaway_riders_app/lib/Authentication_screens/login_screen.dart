@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:foodaway_riders_app/Authentication_screens/rider_home_screen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:foodaway_riders_app/mainScreens/rider_home_screen.dart';
 import 'package:foodaway_riders_app/Authentication_screens/signup_screen.dart';
 import 'package:foodaway_riders_app/screens/reset_password/forget_password.dart';
 import 'package:foodaway_riders_app/widgets/custom_textfield.dart';
@@ -36,14 +37,21 @@ class _LoginState extends State<Login> {
     SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
     await FirebaseFirestore.instance.collection("riders").doc(currentUser.uid).get().then((snapshot)async{
       if(snapshot.exists){
-      await sharedPreferences.setString("Uid", currentUser.uid);
-      await sharedPreferences.setString("email", snapshot.data()!["riderEmail"]);
-      await sharedPreferences.setString("name", snapshot.data()!["riderName"]);
-      await sharedPreferences.setString("photoUrl",snapshot.data()!["riderAvataUrl"]);
-      await sharedPreferences.setString("address",snapshot.data()!["address"]); 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => RiderHome(),));
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Logged In successfully')));
-      }else{
+          if(snapshot.data()!["status"] == "approved"){
+            await sharedPreferences.setString("Uid", currentUser.uid);
+            await sharedPreferences.setString("email", snapshot.data()!["riderEmail"]);
+            await sharedPreferences.setString("name", snapshot.data()!["riderName"]);
+            await sharedPreferences.setString("photoUrl",snapshot.data()!["riderAvataUrl"]);
+            await sharedPreferences.setString("address",snapshot.data()!["address"]); 
+            Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => RiderHome(),));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Logged In successfully')));
+          }else{
+             userSignOut();
+            Navigator.pop(context);
+            Fluttertoast.showToast(msg: "Admin has Blocked your account.");
+
+          }
+      }else{ 
         userSignOut();
         Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => Login(),));
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Rider does not exist')));

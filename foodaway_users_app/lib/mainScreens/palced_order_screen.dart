@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:foodaway_users_app/assistantMethods/assistant_methods.dart';
 import 'package:foodaway_users_app/global/global.dart';
 import 'package:foodaway_users_app/mainScreens/user_home_screen.dart';
+import 'package:foodaway_users_app/screens/splash_screen.dart';
 import 'package:foodaway_users_app/tests/open_gallery_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -115,6 +116,12 @@ class _PlacedOrderScreenState extends State<PlacedOrderScreen> {
                 style: ElevatedButton.styleFrom(
                   primary: Colors.green
                 ),
+                ),
+                SizedBox(height: 12,),
+                ElevatedButton(onPressed:() {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => SplashScreen(),));
+                }, child:Text("Home"),
+                 style:ElevatedButton.styleFrom(primary: Colors.green) ,
                 )
             ],
           ),

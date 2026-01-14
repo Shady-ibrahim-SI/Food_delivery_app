@@ -45,7 +45,22 @@ Future<List<String>> separateOrderItemIDs(dynamic orderIDs)async{
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar:AppBar(),
+        appBar:AppBar(
+          flexibleSpace:Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors:[
+                Colors.red,
+                Colors.black,
+            ],
+            begin: FractionalOffset(0.0, 0.0),
+            end: FractionalOffset(1.0, 0.0),
+            stops: [0.0,1.0],
+            tileMode: TileMode.clamp
+            )
+          ),
+        ),
+        ),
         body: FutureBuilder(
           future:getUid() , 
           builder:(context, snapshot) {
@@ -71,7 +86,7 @@ Future<List<String>> separateOrderItemIDs(dynamic orderIDs)async{
                 itemCount: orderSnapshot.data!.docs.length,
                 itemBuilder:(context, index) {
                     var orderData = orderSnapshot.data!.docs[index];
-                    var productIDs = orderData.get('productIDa');
+                    var productIDs = orderData.get('productIDs');
 
                     return FutureBuilder<List<String>>(
                        future: separateOrderItemIDs(productIDs),
@@ -94,7 +109,7 @@ Future<List<String>> separateOrderItemIDs(dynamic orderIDs)async{
                           itemCount: itemsSnapshot.data!.docs.length,
                           data: itemsSnapshot.data!.docs,
                           orderID: orderData.id,
-                          seperateQuantitiesList: separateOrderItemQuantities((orderSnapshot.data!.docs[index].data()! as Map<String , dynamic> )["productIDa"]),
+                          seperateQuantitiesList: separateOrderItemQuantities((orderSnapshot.data!.docs[index].data()! as Map<String , dynamic> )["productIDs"]),
                         );
                       },
                       );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:foodaway_sellers_app/Model/items.dart';
 import 'package:foodaway_sellers_app/Model/menus_model.dart';
 import 'package:foodaway_sellers_app/mainScreens/itemsScreen.dart';
+import 'package:foodaway_sellers_app/mainScreens/items_detail_screen.dart';
 
 class ItemsDesignDisplay extends StatefulWidget {
   Items? model;
@@ -17,7 +18,7 @@ class _ItemsDesignDisplayState extends State<ItemsDesignDisplay> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        //Navigator.push(context, MaterialPageRoute(builder:(context) => ItemsScreen(model: widget.model,),));
+        Navigator.push(context, MaterialPageRoute(builder:(context) =>ItemDetailsScreen(model: widget.model)));
       },
       splashColor: Colors.amber,
       child: Padding(

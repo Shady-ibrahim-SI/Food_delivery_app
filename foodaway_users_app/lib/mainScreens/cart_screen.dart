@@ -134,7 +134,7 @@ String? testName;
               Positioned(top: 1,right:6, child: Center(
                 child:Consumer<CartItemCounter>(builder:(context, counter, child) {
                   int x = counter.count!-1;
-                    return Text(x.toString(),style: TextStyle(color: Colors.white,fontSize: 20));
+                    return Text((x-1).toString(),style: TextStyle(color: Colors.white,fontSize: 20));
                 },)
                 ),
                 )

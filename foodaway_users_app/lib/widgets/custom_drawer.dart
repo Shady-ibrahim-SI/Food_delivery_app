@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:foodaway_users_app/mainScreens/address_screen.dart';
+import 'package:foodaway_users_app/mainScreens/history_screen.dart';
 import 'package:foodaway_users_app/mainScreens/my_orders_screen.dart';
+import 'package:foodaway_users_app/mainScreens/search_screen.dart';
 import 'package:foodaway_users_app/mainScreens/user_home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -87,21 +90,21 @@ class CustomDrawer extends StatelessWidget {
                     leading: Icon(Icons.access_time,color: Colors.black,),
                     title: Text('History',style: TextStyle(color: Colors.black),),
                     onTap: () {
-                      
+                      Navigator.push(context, MaterialPageRoute(builder:(context) => HistoryScreen(),));
                     },
                   ),
                   ListTile(
                     leading: Icon(Icons.search,color: Colors.black,),
                     title: Text('Search',style: TextStyle(color: Colors.black),),
                     onTap: () {
-                      
+                      Navigator.push(context, MaterialPageRoute(builder:(context) => SearchScreen(),));
                     },
                   ),
                   ListTile(
                     leading: Icon(Icons.add_location,color: Colors.black,),
                     title: Text('Add New Address',style: TextStyle(color: Colors.black),),
                     onTap: () {
-                      
+                      Navigator.push(context, MaterialPageRoute(builder:(context) => AddressScreen(),));
                     },
                   ),
                   ListTile(

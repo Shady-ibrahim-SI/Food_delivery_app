@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:foodaway_sellers_app/mainScreens/Seller_Home.dart';
 import 'package:foodaway_sellers_app/Authentication_screens/Signup.dart';
 import 'package:foodaway_sellers_app/reset_password/forget_password.dart';
@@ -36,13 +37,21 @@ class _LoginState extends State<Login> {
     SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
     await FirebaseFirestore.instance.collection("sellers").doc(currentUser.uid).get().then((snapshot)async{
       if(snapshot.exists){
-      await sharedPreferences.setString("Uid", currentUser.uid);
-      await sharedPreferences.setString("email", snapshot.data()!["sellerEmail"]);
-      await sharedPreferences.setString("name", snapshot.data()!["sellerName"]);
-      await sharedPreferences.setString("photoUrl",snapshot.data()!["sellerAvataUrl"]);
-      await sharedPreferences.setString("address",snapshot.data()!["address"]);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => SellerHome(),));
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Logged In successfully')));
+        if(snapshot.data()!["status"] == "approved"){
+          await sharedPreferences.setString("Uid", currentUser.uid);
+          await sharedPreferences.setString("email", snapshot.data()!["sellerEmail"]);
+          await sharedPreferences.setString("name", snapshot.data()!["sellerName"]);
+          await sharedPreferences.setString("photoUrl",snapshot.data()!["sellerAvataUrl"]);
+          await sharedPreferences.setString("address",snapshot.data()!["address"]);
+          Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => SellerHome(),));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Logged In successfully')));
+        }
+        else{
+          userSignOut();
+          Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => Login(),));
+          Fluttertoast.showToast(msg: "Admin has Blocked your account.");
+        }
+      
       }else{
         userSignOut();
         Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => Login(),));

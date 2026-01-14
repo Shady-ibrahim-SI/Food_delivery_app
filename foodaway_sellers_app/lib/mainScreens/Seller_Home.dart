@@ -3,9 +3,11 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:foodaway_sellers_app/Authentication_screens/Login.dart';
 import 'package:foodaway_sellers_app/Model/menus_model.dart';
 import 'package:foodaway_sellers_app/UploadScreens/menus_upload_screen.dart';
+import 'package:foodaway_sellers_app/screens/splash_screen.dart';
 import 'package:foodaway_sellers_app/widgets/custom_drawer.dart';
 import 'package:foodaway_sellers_app/widgets/custom_richt_text.dart';
 import 'package:foodaway_sellers_app/widgets/food_info_design.dart';
@@ -46,6 +48,24 @@ class _SellerHomeState extends State<SellerHome> {
  void userSignOut() {
     FirebaseAuth firebaseAuth =FirebaseAuth.instance;
     firebaseAuth.signOut();
+  }
+  restrictBlockedSellersFromUsingApp() async{
+    FirebaseAuth firebaseAuth =FirebaseAuth.instance;
+    await FirebaseFirestore.instance.collection("sellers")
+    .doc(firebaseAuth.currentUser!.uid).get().then((snapshot) {
+
+      if(snapshot.data()!["status"] != "approved"){
+        Fluttertoast.showToast(msg: "you have been blocked");
+        userSignOut();
+        Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => SplashScreen(),));
+      }
+    });
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    restrictBlockedSellersFromUsingApp();
   }
   @override
   Widget build(BuildContext context) {
@@ -120,8 +140,8 @@ class _SellerHomeState extends State<SellerHome> {
                         gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 1, // Number of columns
                         crossAxisSpacing: 10.0, // Spacing between columns
-                        mainAxisSpacing: 10.0, // Spacing between rows
-                        childAspectRatio: 1.33, // Aspect ratio of grid items
+                        mainAxisSpacing: 20.0, // Spacing between rows
+                        childAspectRatio: 1.32, // Aspect ratio of grid items
                         )
                       );
                     },

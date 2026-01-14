@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:foodaway_sellers_app/Authentication_screens/Login.dart';
 import 'package:foodaway_sellers_app/mainScreens/Seller_Home.dart';
+import 'package:foodaway_sellers_app/mainScreens/earnings_screen.dart';
+import 'package:foodaway_sellers_app/mainScreens/history_screen.dart';
+import 'package:foodaway_sellers_app/mainScreens/new_orders_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -78,21 +81,21 @@ class CustomDrawer extends StatelessWidget {
                     leading: Icon(Icons.monetization_on,color: Colors.black,),
                     title: Text('My Earnings',style: TextStyle(color: Colors.black),),
                     onTap: () {
-                      
+                      Navigator.push(context, MaterialPageRoute(builder:(context) => EarningsScreen(),));
                     },
                   ),
                   ListTile(
                     leading: Icon(Icons.reorder,color: Colors.black,),
                     title: Text('New Orders',style: TextStyle(color: Colors.black),),
                     onTap: () {
-                      
+                      Navigator.push(context, MaterialPageRoute(builder:(context) => NewOrdersScreen(),));
                     },
                   ),
                   ListTile(
                     leading: Icon(Icons.local_shipping,color: Colors.black,),
                     title: Text('History - Orders',style: TextStyle(color: Colors.black),),
                     onTap: () {
-                      
+                      Navigator.push(context, MaterialPageRoute(builder:(context) => HistoryScreen(),));
                     },
                   ),
                   ListTile(
